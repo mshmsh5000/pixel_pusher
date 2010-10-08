@@ -1,0 +1,6 @@
+name = "Pixel Pusher"
+description = "Integration with Pixel Ping, the traffic tracker from Pro Publica and DocumentCloud.  Or serve your own pixel."
+version = "6.x-0.5"
+package = "Other"
+php = 5.2
+core = 6.x

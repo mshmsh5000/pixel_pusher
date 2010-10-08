@@ -1,0 +1,6 @@
+{
+  "host": "127.0.0.1",
+  "port": "9187",
+  "interval": 5,
+  "endpoint": "http://example.com/pixel_pusher/save_hits"
+}
