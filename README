@@ -1,0 +1,90 @@
+Matt Holford <matt.holford@me.com>
+
+CONTENTS OF THIS FILE
+---------------------
+
+ * About Pixel Pusher
+ * Requirements
+ * Installation
+ * Running Pixel Ping
+ * Module status
+
+
+ABOUT PIXEL PUSHER
+------------------
+
+Pixel Pusher integrates with Pixel Ping, the Node.js pixel-tracking service from 
+Pro Publica and DocumentCloud:
+
+http://documentcloud.github.com/pixel-ping/
+http://www.propublica.org/nerds/item/pixel-ping-a-nodejs-stats-tracker
+
+The point of the module is to receive and process information from Pixel Ping so
+that Drupal can accurately track node statistics via the node_counter table.
+This enables a site to operate behind layers of external cache but still have
+accurate information for determining, e.g., most popular content.
+
+
+REQUIREMENTS
+------------
+
+This module runs in Drupal or Pressflow 6.x.  To run Pixel Ping, you'll need 
+Node.js and the Node Package Manager (npm) installed:
+
+http://nodejs.org/
+http://github.com/isaacs/npm
+
+
+INSTALLATION
+------------
+
+Install the Drupal module as you normally would:
+
+* Unpack the pixel_pusher archive into your modules folder, typically at
+  sites/all/modules.
+
+* Enable the module using Drush or in your browser at admin/build/modules.
+
+* Pixel Pusher provides an admin page at admin/settings/pixel_pusher where you must
+  specify the server location of Pixel Ping.  Set this to reflect the "host" and 
+  "port" settings in Pixel Ping's config.json file (see below, "Running Pixel Ping").
+
+* Use the blocks administration page at admin/build/block to add the Pixel Pusher block
+  to your public theme.  This would typically go in a footer region.
+
+
+RUNNING PIXEL PING
+------------------
+
+Pixel Ping is easy to install and run:
+
+pixel-ping path/to/config.json
+
+A sample config file is shipped with this module as sample-config.json.  You'll see that this config
+has the server running here:
+
+http://127.0.0.1:9187
+
+You should set the "Pixel Ping server" value on the Pixel Pusher settings page to this URL.
+
+If you run Pixel Ping in a shell, you'll see a message like this as a confirmation that the service
+has started:
+
+Flushing hits to http://example.com/pixel_pusher/save_hits
+
+When a browser requests a page containing this pixel, Pixel Pusher will report back to stdout:
+
+1:	node,5276
+--- flushed ---
+
+The number after the comma is the NID of the node that's been hit.  You'll see a "--- flushed ---" 
+when Pixel Ping flushes its data according to the time you set in config.json.
+
+
+MODULE STATUS
+-------------
+
+The next version of this module will include a second pixel block, this one served by Drupal itself.
+The pixel will cause Drupal to increment the node_counter stats.  The logic for this will be adapted
+from the excellent Boost module (http://drupal.org/project/boost), to whose developer I am 
+extremely grateful.
