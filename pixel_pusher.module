@@ -149,9 +149,6 @@ function pixel_pusher_write_hits($results) {
       $session_id = $_COOKIE[session_name()];
     }
   }
-
-  /* Anonymous users always get a User ID of 0. */
-  $uid = 0;
   
   if (!empty($results)) {
     foreach ($results as $key => $val) {
