@@ -90,17 +90,12 @@ function pixel_pusher_block($op = 'list', $delta = 0, $edit = array()) {
       $block = array();
 
       switch ($delta) {
-        case 0:
-          global $node;
-          
-          $arg1 = arg(1);
-          
-          if ('node' == arg(0) && !empty($arg1)) {
+        case 0:  
+          if ($node = menu_get_object('node')) {
             $block['subject'] = false;
             $server_url = variable_get('pixel_pusher_remote', 'http://127.0.0.1');
-            $block['content'] = '<img src="' . $server_url . '/pixel.gif?key=node,' . $arg1 . '" width="1" height="1" alt="" />';
+            $block['content'] = '<img src="' . $server_url . '/pixel.gif?key=node,' . $node->nid . '" width="1" height="1" alt="" />';
           }
-          
           return $block;
       }
   }
