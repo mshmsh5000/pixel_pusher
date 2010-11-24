@@ -92,7 +92,7 @@ function pixel_pusher_block($op = 'list', $delta = 0, $edit = array()) {
       switch ($delta) {
         case 0:  
           if ($node = menu_get_object('node')) {
-            $block['subject'] = false;
+            $block['subject'] = FALSE;
             $server_url = variable_get('pixel_pusher_remote', 'http://127.0.0.1');
             $block['content'] = '<img src="' . $server_url . '/pixel.gif?key=node,' . $node->nid . '" width="1" height="1" alt="" />';
           }
@@ -107,16 +107,16 @@ function pixel_pusher_block($op = 'list', $delta = 0, $edit = array()) {
  */
 function pixel_pusher_save_hits() {
   if (!empty($_REQUEST['json'])) {
-    $results = json_decode($_REQUEST['json'], true);
+    $results = json_decode($_REQUEST['json'], TRUE);
     if ($results) {
       pixel_pusher_write_hits($results);
       if (variable_get('pixel_pusher_debug', 0)) {
-        watchdog('Pixel Ping', print_r($results, true), array(), WATCHDOG_DEBUG);
+        watchdog('Pixel Ping', print_r($results, TRUE), array(), WATCHDOG_DEBUG);
       }
     }
   }
   else {
-    watchdog('Pixel Ping', 'No "json" object received.  Raw data: ' . print_r($_REQUEST, true), array(), WATCHDOG_WARNING);
+    watchdog('Pixel Ping', 'No "json" object received.  Raw data: ' . print_r($_REQUEST, TRUE), array(), WATCHDOG_WARNING);
   }
 }
 
