@@ -91,7 +91,7 @@ function pixel_pusher_block($op = 'list', $delta = 0, $edit = array()) {
 
       switch ($delta) {
         case 0:  
-          if ($node = menu_get_object('node')) {
+          if ($node = menu_get_object('node') && empty(arg(2))) {
             $block['subject'] = FALSE;
             $server_url = variable_get('pixel_pusher_remote', 'http://127.0.0.1');
             $block['content'] = '<img src="' . $server_url . '/pixel.gif?key=node,' . $node->nid . '" width="1" height="1" alt="" />';
