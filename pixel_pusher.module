@@ -39,10 +39,15 @@ function pixel_pusher_menu() {
 }
 
 /**
- * Implementation of hook_perm().
+ * Implementation of hook_permission().
  */
 function pixel_pusher_permission() {
-  return array('administer pixel_pusher');
+  return array(
+    'administer pixel_pusher' => array(
+      'title' => t('Administer Pixel Pusher'),
+      'description' => t('Who can change the settings for the Pixel Pusher module'),
+    ),
+  );
 }
 
 /**
