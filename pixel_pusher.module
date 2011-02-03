@@ -20,17 +20,18 @@ function pixel_pusher_menu() {
   $items = array();
   
   $items['pixel_pusher/save_hits'] = array(
-    'title' => t('Pixel Ping flush callback'),
+    'title' => 'Pixel Ping flush callback',
     'page callback' => 'pixel_pusher_save_hits',
     'type' => MENU_CALLBACK,
     'access arguments' => array('access content'),
   );
   
-  $items['admin/settings/pixel_pusher'] = array(
-    'title' => t('Pixel Pusher settings'),
+  $items['admin/config/system/pixel_pusher'] = array(
+    'title' => 'Pixel Pusher settings',
+    'description' => 'Change the location of where your Pixel Ping instance is running',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('pixel_pusher_admin_settings'),
-    'type' => MENU_NORMAL,
+    'type' => MENU_NORMAL_ITEM,
     'access arguments' => array('administer pixel_pusher'),
   );
   
@@ -40,7 +41,7 @@ function pixel_pusher_menu() {
 /**
  * Implementation of hook_perm().
  */
-function pixel_pusher_perm() {
+function pixel_pusher_permission() {
   return array('administer pixel_pusher');
 }
 
@@ -72,32 +73,39 @@ function pixel_pusher_admin_settings() {
 }
 
 /**
- * Implementation of hook_block().
+ * Implementation of hook_block_info().
  */
-function pixel_pusher_block($op = 'list', $delta = 0, $edit = array()) {
-  switch ($op) {
-    case 'list':
-      $blocks = array();
-      
-      $blocks[0] = array(
-        'info' => t('Pixel Counter tracker pixel'),
-        'weight' => 0,
-      );
-      
-      return $blocks;
-    
-    case 'view':
-      $block = array();
+function pixel_pusher_block_info() {
+  $blocks = array();
 
-      switch ($delta) {
-        case 0:  
-          if ($node = menu_get_object('node') && empty(arg(2))) {
-            $block['subject'] = FALSE;
-            $server_url = variable_get('pixel_pusher_remote', 'http://127.0.0.1');
-            $block['content'] = '<img src="' . $server_url . '/pixel.gif?key=node,' . $node->nid . '" width="1" height="1" alt="" />';
-          }
-          return $block;
+  $blocks['pixel_pusher'] = array(
+    'info' => t('Pixel Counter tracker pixel'),
+    'weight' => 0,
+  );
+
+  return $blocks;
+}
+
+/**
+ * Implementation of hook_block_view().
+ */
+function pixel_pusher_block_view($delta = '') {
+  $block = array();
+  
+  switch ($delta) {
+    case 'pixel_pusher':
+      global $node;
+
+      $arg1 = arg(1);
+      $arg2 = arg(2);
+          
+      if ('node' == arg(0) && !empty($arg1) && empty($arg2)) {
+        $block['subject'] = FALSE;
+        $server_url = variable_get('pixel_pusher_remote', 'http://127.0.0.1');
+        $block['content'] = '<img src="' . $server_url . '/pixel.gif?key=node,' . $arg1 . '" width="1" height="1" alt="" />';
       }
+          
+      return $block;
   }
 }
 
@@ -128,26 +136,36 @@ function pixel_pusher_save_hits() {
  * boost_stats.php script that ships with the Boost module.
  */
 function pixel_pusher_write_hits($results) {
+
+  // Anonymous users always get a User ID of 0.
+  $uid = 0;
   
   if (!empty($results)) {
     foreach ($results as $key => $val) {
       
-      $path = split(',', $key);
+      $path = explode(',', $key);
       
       if ('node' == $path[0] && !empty($path[1])) {
         
         // Mimic the "node view" event.
-        db_query('UPDATE {node_counter} SET daycount = daycount + %d, totalcount = totalcount + %d, timestamp = %d WHERE nid = %d', 
-          $val, $val, time(), $path[1]);
+        $affected = db_update('node_counter')
+          ->expression('daycount', 'daycount + :dc', array('dc'=>$val))
+          ->expression('totalcount', 'totalcount + :tc', array('tc'=>$val))
+          ->fields(array('timestamp'=>time()))
+          ->condition('nid', $path[1])
+          ->execute();
         
         // If we affected 0 rows, this is the first time viewing the node.
-        if (!db_affected_rows()) {
-          
-          // We must create a new row to store counters for the new node.
-          db_query('INSERT INTO {node_counter} (nid, daycount, totalcount, `timestamp`) VALUES (%d, %d, %d, %d)', 
-            $path[1], $val, $val, time());
+        if (!$affected) {
+          db_insert('node_counter')
+            ->fields(array(
+              'nid' => $path[1],
+              'daycount' => $val,
+              'totalcount' => $val,
+              'timestamp' => time(),
+            ))
+            ->execute();
         }
-        
         if (variable_get('pixel_pusher_debug', 0)) {
           watchdog('Pixel Pusher', 'Updated node nid=%node by %amount', array('%node' => $path[1], '%amount' => $val));
         }
