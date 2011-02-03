@@ -129,42 +129,30 @@ function pixel_pusher_save_hits() {
  */
 function pixel_pusher_write_hits($results) {
   
-  /* From Boost's stats tracker callback: initialize a generic session. */
-  $session_id = session_id();
-  if (empty($session_id)) {
-    if (empty($_COOKIE[session_name()])) {
-      if (empty($_SERVER['HTTP_USER_AGENT'])) {
-        $session_id = md5(ip_address());
-      }
-      else {
-        $session_id = md5($_SERVER['HTTP_USER_AGENT'] . ip_address());
-      }
-    }
-    else {
-      $session_id = $_COOKIE[session_name()];
-    }
-  }
-  
   if (!empty($results)) {
     foreach ($results as $key => $val) {
+      
       $path = split(',', $key);
+      
       if ('node' == $path[0] && !empty($path[1])) {
         
-        /* Mimic the "node view" event. */
+        // Mimic the "node view" event.
         db_query('UPDATE {node_counter} SET daycount = daycount + %d, totalcount = totalcount + %d, timestamp = %d WHERE nid = %d', 
           $val, $val, time(), $path[1]);
         
-        /* If we affected 0 rows, this is the first time viewing the node. */
+        // If we affected 0 rows, this is the first time viewing the node.
         if (!db_affected_rows()) {
           
-          /* We must create a new row to store counters for the new node. */
+          // We must create a new row to store counters for the new node.
           db_query('INSERT INTO {node_counter} (nid, daycount, totalcount, `timestamp`) VALUES (%d, %d, %d, %d)', 
             $path[1], $val, $val, time());
         }
+        
         if (variable_get('pixel_pusher_debug', 0)) {
           watchdog('Pixel Pusher', 'Updated node nid=%node by %amount', array('%node' => $path[1], '%amount' => $val));
         }
       }
+      
     }
   }  
 }
